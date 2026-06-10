@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#080808">
+<title>Treino Matheus</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#080808;color:#F0F0F0;font-family:"Trebuchet MS","Lucida Grande",sans-serif;max-width:480px;margin:0 auto;min-height:100vh;overflow-x:hidden}
+#glow{position:fixed;top:-80px;left:50%;transform:translateX(-50%);width:320px;height:320px;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;transition:background .6s}
+#header{position:sticky;top:0;z-index:10;background:rgba(8,8,8,.93);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid #181818;padding:14px 18px 10px}
+.header-top{display:flex;justify-content:space-between;align-items:center}
+.header-name{font-size:10px;letter-spacing:3px;color:#555;text-transform:uppercase}
+.header-title{font-size:18px;font-weight:800;color:#FFF;letter-spacing:-.5px}
+#btn-hist{background:transparent;border:1px solid #222;border-radius:10px;padding:7px 13px;color:#888;font-size:10px;letter-spacing:1px;cursor:pointer;font-family:inherit;text-transform:uppercase}
+#btn-hist.active{background:#1E1E1E}
+.milestone-bar{margin-top:10px;background:#111;border:1px solid #222;border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:10px}
+.ml-label{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.ml-track{flex:1;height:4px;background:#1A1A1A;border-radius:4px;overflow:hidden}
+.ml-fill{height:100%;border-radius:4px;transition:width .4s ease;background:linear-gradient(90deg,#FF5722,#FFB300)}
+.ml-count{font-size:11px;font-weight:800;color:#FFB300;white-space:nowrap}
+#tabs{display:flex;gap:6px;margin-top:10px}
+.tab{flex:1;background:#111;border:1.5px solid #1E1E1E;border-radius:10px;padding:7px 4px;cursor:pointer;transition:all .2s;text-align:center}
+.tab-label{font-size:12px;font-weight:800;letter-spacing:1px}
+.tab-count{font-size:10px;margin-top:1px}
+#content{padding:14px 18px 100px;position:relative;z-index:1}
+#day-card{border-radius:0 0 14px 14px;padding:14px;margin-bottom:12px;background:#111;border-top-width:3px;border-top-style:solid;border-left:1px solid transparent;border-right:1px solid transparent;border-bottom:1px solid transparent}
+.day-card-top{display:flex;justify-content:space-between;align-items:flex-start}
+#day-label{font-size:21px;font-weight:900;letter-spacing:-.5px}
+#day-focus{font-size:10px;color:#666;margin-top:2px}
+#btn-reset{background:transparent;border:1px solid #222;border-radius:8px;padding:5px 10px;color:#444;font-size:10px;cursor:pointer;font-family:inherit;letter-spacing:1px;text-transform:uppercase;display:none}
+.progress-header{display:flex;justify-content:space-between;margin-top:12px;margin-bottom:5px}
+.progress-lbl{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase}
+#progress-count{font-size:11px;font-weight:700}
+#progress-bar-bg{height:4px;background:#1A1A1A;border-radius:4px;overflow:hidden}
+#progress-bar{height:100%;width:0%;border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+#done-banner{border-radius:14px;padding:14px;margin-bottom:12px;text-align:center;display:none}
+.done-emoji{font-size:26px;margin-bottom:3px}
+.done-title{font-weight:800;font-size:14px}
+.done-sub{font-size:11px;color:#666;margin-top:3px}
+.ex-card{background:#111;border:1.5px solid #1A1A1A;border-radius:14px;margin-bottom:8px;overflow:hidden;transition:border-color .25s}
+.ex-card.done{background:#0E180E}
+.ex-card-header{padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.ex-checkbox{width:26px;height:26px;min-width:26px;border-radius:7px;background:#1A1A1A;border:2px solid #2A2A2A;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:13px;color:#fff;flex-shrink:0}
+.ex-card.done .ex-checkbox{border:none}
+.ex-info{flex:1;min-width:0}
+.ex-tag{font-size:7px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;border-radius:5px;padding:2px 6px;display:inline-block;margin-bottom:3px}
+.ex-name{font-size:13px;font-weight:700;line-height:1.3;color:#EEE;transition:color .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ex-card.done .ex-name{color:#777;text-decoration:line-through}
+.ex-thumb{width:58px;height:52px;border-radius:9px;object-fit:cover;flex-shrink:0;background:#1A1A1A}
+.ex-expand-btn{font-size:11px;color:#333;cursor:pointer;padding:2px 6px;flex-shrink:0}
+.ex-details{border-top:1px solid #1A1A1A;padding:12px 14px;display:none}
+.ex-details.open{display:block}
+.ex-big-img{width:100%;height:160px;object-fit:cover;border-radius:10px;margin-bottom:12px;background:#1A1A1A;display:block}
+.ex-stats{display:flex;gap:8px;margin-bottom:12px}
+.ex-stat{flex:1;background:#0D0D0D;border:1px solid #1E1E1E;border-radius:8px;padding:7px 8px}
+.ex-stat-lbl{font-size:7px;color:#444;letter-spacing:.8px;text-transform:uppercase}
+.ex-stat-val{font-size:12px;font-weight:700;color:#AAA;margin-top:1px}
+.ex-card.done .ex-stat-val{color:#444}
+.weight-row{display:flex;align-items:center;gap:10px}
+.weight-lbl{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.weight-input{flex:1;background:#0D0D0D;border:1px solid #2A2A2A;border-radius:8px;padding:8px 12px;color:#EEE;font-size:14px;font-weight:700;font-family:inherit;outline:none;transition:border-color .2s;max-width:120px}
+.weight-input:focus{border-color:#555}
+.weight-unit{font-size:12px;color:#555;font-weight:700}
+#bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(8,8,8,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid #161616;padding:10px 18px 22px;z-index:10;display:flex;align-items:center;gap:10px}
+#bottom-text{flex:1;font-size:11px;color:#444}
+#bottom-pct{border-radius:10px;padding:5px 13px;font-size:12px;font-weight:700;letter-spacing:.5px}
+#history-view{padding:20px 18px 100px;position:relative;z-index:1;display:none}
+.stat-row{display:flex;gap:10px;margin-bottom:20px}
+.stat-box{flex:1;background:#111;border:1px solid #1E1E1E;border-radius:14px;padding:14px 16px}
+.stat-num{font-size:26px;font-weight:800;color:#FFF}
+.stat-lbl{font-size:10px;color:#555;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.hist-empty{text-align:center;color:#333;padding:60px 0;font-size:13px;line-height:1.6}
+.hist-item{background:#111;border:1px solid #1E1E1E;border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.hist-date{font-size:10px;color:#555;letter-spacing:1px;margin-bottom:8px;text-transform:uppercase}
+.hist-tags{display:flex;gap:8px;flex-wrap:wrap}
+.hist-tag{border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:1px}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;padding:24px}
+#modal.open{display:flex}
+.modal-box{background:#111;border:1px solid #333;border-radius:20px;padding:30px 24px;max-width:360px;width:100%;text-align:center}
+.modal-icon{font-size:52px;margin-bottom:12px}
+.modal-title{font-size:20px;font-weight:900;color:#FFB300;margin-bottom:8px}
+.modal-body{font-size:13px;color:#888;line-height:1.6;margin-bottom:20px}
+.modal-btn{background:#FFB300;border:none;border-radius:12px;padding:13px 28px;font-size:14px;font-weight:800;color:#000;cursor:pointer;font-family:inherit;letter-spacing:.5px;width:100%}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(.96)}100%{transform:scale(1)}}
+.pop{animation:pop .3s ease}
+</style>
+</head>
+<body>
+<div id="glow"></div>
+
+<!-- MILESTONE MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-icon">&#127942;</div>
+    <div class="modal-title">30 Treinos Concluidos!</div>
+    <div class="modal-body">Parabens, Matheus! Voce completou 30 sessoes de treino. Este e o momento ideal para atualizar seu programa e evoluir para o proximo nivel.</div>
+    <button class="modal-btn" onclick="closeModal()">Entendido!</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="header-top">
+    <div>
+      <div class="header-name">Matheus Rocha Andrade</div>
+      <div class="header-title">Treino Avancado</div>
+    </div>
+    <button id="btn-hist" onclick="toggleView()">Historico</button>
+  </div>
+  <div class="milestone-bar">
+    <span class="ml-label">Meta 30</span>
+    <div class="ml-track"><div class="ml-fill" id="ml-fill" style="width:0%"></div></div>
+    <span class="ml-count" id="ml-count">0/30</span>
+  </div>
+  <div id="tabs"></div>
+</div>
+
+<!-- WORKOUT VIEW -->
+<div id="content">
+  <div id="day-card">
+    <div class="day-card-top">
+      <div><div id="day-label"></div><div id="day-focus"></div></div>
+      <button id="btn-reset" onclick="resetDay()">Resetar</button>
+    </div>
+    <div class="progress-header">
+      <span class="progress-lbl">Progresso</span>
+      <span id="progress-count"></span>
+    </div>
+    <div id="progress-bar-bg"><div id="progress-bar"></div></div>
+  </div>
+  <div id="done-banner">
+    <div class="done-emoji">&#127942;</div>
+    <div class="done-title" id="done-title"></div>
+    <div class="done-sub">Sessao salva no historico.</div>
+  </div>
+  <div id="ex-list"></div>
+</div>
+
+<!-- HISTORY VIEW -->
+<div id="history-view">
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-num" id="h-sessions">0</div><div class="stat-lbl">Sessoes</div></div>
+    <div class="stat-box"><div class="stat-num" id="h-days">0</div><div class="stat-lbl">Dias ativos</div></div>
+  </div>
+  <div id="hist-list"></div>
+</div>
+
+<div id="bottom">
+  <div id="bottom-text"></div>
+  <div id="bottom-pct"></div>
+</div>
+
+<script>
+var DAYS = [
+  {
+    id:"push", label:"PUSH", sub:"Peito - Ombros - Triceps", color:"#FF5722",
+    exercises:[
+      {id:"p1",name:"Supino Reto com Barra",        tag:"Peito",   sets:"4x",reps:"6/6/8/8",    rest:"120s",img:"https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=200&fit=crop&q=70"},
+      {id:"p2",name:"Supino Inclinado Halteres",     tag:"Peito",   sets:"4x",reps:"8/8/10/10",  rest:"90s", img:"https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=200&fit=crop&q=70"},
+      {id:"p3",name:"Crucifixo no Cabo",             tag:"Peito",   sets:"3x",reps:"10/10/8+6+6",rest:"90s", img:"https://images.unsplash.com/photo-1581009137042-c552e485697a?w=400&h=200&fit=crop&q=70"},
+      {id:"p4",name:"Military Press com Barra",      tag:"Ombro",   sets:"4x",reps:"6/6/8/8",    rest:"120s",img:"https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=400&h=200&fit=crop&q=70"},
+      {id:"p5",name:"Elevacao Lateral Polia",        tag:"Ombro",   sets:"4x",reps:"12/12/10/10",rest:"60s", img:"https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=200&fit=crop&q=70"},
+      {id:"p6",name:"Triceps Testa Barra EZ",        tag:"Triceps", sets:"3x",reps:"8-10",        rest:"75s", img:"https://images.unsplash.com/photo-1530822847156-5df684ec5933?w=400&h=200&fit=crop&q=70"},
+      {id:"p7",name:"Triceps Polia Corda",           tag:"Triceps", sets:"3x",reps:"12-15",       rest:"60s", img:"https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400&h=200&fit=crop&q=70"}
+    ]
+  },
+  {
+    id:"pull", label:"PULL", sub:"Costas - Biceps", color:"#2196F3",
+    exercises:[
+      {id:"b1",name:"Barra Fixa Pronada",            tag:"Costas",  sets:"4x",reps:"Maximo",      rest:"120s",img:"https://images.unsplash.com/photo-1598971457999-ca4ef48a9a71?w=400&h=200&fit=crop&q=70"},
+      {id:"b2",name:"Remada Curvada Barra",          tag:"Costas",  sets:"4x",reps:"6/6/8/8",    rest:"120s",img:"https://images.unsplash.com/photo-1534368959876-26bf04f2c947?w=400&h=200&fit=crop&q=70"},
+      {id:"b3",name:"Puxada Semi-Pronada Polia",     tag:"Costas",  sets:"4x",reps:"8/8/10/10",  rest:"90s", img:"https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=200&fit=crop&q=70"},
+      {id:"b4",name:"Remada Unilateral Halteres",    tag:"Costas",  sets:"3x",reps:"8-10/lado",   rest:"80s", img:"https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=400&h=200&fit=crop&q=70"},
+      {id:"b5",name:"Rosca Direta Barra EZ",         tag:"Biceps",  sets:"4x",reps:"8/8/10/10",  rest:"75s", img:"https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400&h=200&fit=crop&q=70"},
+      {id:"b6",name:"Rosca Alternada Halteres",      tag:"Biceps",  sets:"3x",reps:"10-12/braco", rest:"60s", img:"https://images.unsplash.com/photo-1576678927484-cc907957088c?w=400&h=200&fit=crop&q=70"},
+      {id:"b7",name:"Rosca Martelo Halteres",        tag:"Biceps",  sets:"3x",reps:"12-15",       rest:"60s", img:"https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=400&h=200&fit=crop&q=70"}
+    ]
+  },
+  {
+    id:"legs", label:"LEGS", sub:"Quad - Posterior - Gluteos - Panturrilha", color:"#4CAF50",
+    exercises:[
+      {id:"l1",name:"Agachamento Livre com Barra",   tag:"Quad",        sets:"4x",reps:"6/6/8/8",    rest:"150s",img:"https://images.unsplash.com/photo-1566241142559-40e1dab266c6?w=400&h=200&fit=crop&q=70"},
+      {id:"l2",name:"Leg Press 45",                  tag:"Quad",        sets:"4x",reps:"10/10/12/12",rest:"90s", img:"https://images.unsplash.com/photo-1520334363432-89abb9306a8e?w=400&h=200&fit=crop&q=70"},
+      {id:"l3",name:"Cadeira Extensora",             tag:"Quad",        sets:"3x",reps:"10/10/8+6+6",rest:"90s", img:"https://images.unsplash.com/photo-1571019613576-2b22c76fd955?w=400&h=200&fit=crop&q=70"},
+      {id:"l4",name:"Levantamento Terra Romeno",     tag:"Posterior",   sets:"4x",reps:"8-10",        rest:"120s",img:"https://images.unsplash.com/photo-1603287681836-b174ce5074c2?w=400&h=200&fit=crop&q=70"},
+      {id:"l5",name:"Hip Thrust com Barra",          tag:"Gluteos",     sets:"4x",reps:"10-12",       rest:"90s", img:"https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=400&h=200&fit=crop&q=70"},
+      {id:"l6",name:"Flexora Deitada Leg Curl",      tag:"Posterior",   sets:"3x",reps:"10-12",       rest:"75s", img:"https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400&h=200&fit=crop&q=70"},
+      {id:"l7",name:"Panturrilha em Pe Maquina",     tag:"Panturrilha", sets:"4x",reps:"15-20",       rest:"60s", img:"https://images.unsplash.com/photo-1552674605-db5fecabfe68?w=400&h=200&fit=crop&q=70"}
+    ]
+  }
+];
+
+var TC = {Peito:"#FF7043",Ombro:"#CE93D8",Triceps:"#B39DDB",Costas:"#64B5F6",Biceps:"#4FC3F7",Quad:"#81C784",Posterior:"#A5D6A7",Gluteos:"#FFCC80",Panturrilha:"#C5E1A5"};
+var SK = "treino_v2";
+var state = {checked:{}, history:{}, weights:{}, milestone30shown:false};
+var aDay = 0;
+var cView = "workout";
+var expandedEx = null;
+
+function load() { try { var r = localStorage.getItem(SK); if(r) state = Object.assign({checked:{},history:{},weights:{},milestone30shown:false}, JSON.parse(r)); } catch(e){} }
+function save() { try { localStorage.setItem(SK, JSON.stringify(state)); } catch(e){} }
+function today() { return new Date().toISOString().slice(0,10); }
+
+function totalSessions() {
+  return Object.values(state.history).reduce(function(a,b){ return a + b.length; }, 0);
+}
+
+function updateMilestoneBar() {
+  var n = Math.min(totalSessions(), 30);
+  var pct = Math.round(n/30*100);
+  document.getElementById("ml-fill").style.width = pct + "%";
+  document.getElementById("ml-count").textContent = n + "/30";
+}
+
+function checkMilestone() {
+  var n = totalSessions();
+  if (n >= 30 && !state.milestone30shown) {
+    state.milestone30shown = true;
+    save();
+    setTimeout(function() {
+      document.getElementById("modal").classList.add("open");
+      if (Notification && Notification.permission === "granted") {
+        new Notification("Treino Matheus", {
+          body: "Voce completou 30 sessoes! Hora de atualizar o programa.",
+          icon: "https://monumental-dragon-2b63ac.netlify.app/favicon.ico"
+        });
+      }
+    }, 800);
+  }
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.remove("open");
+}
+
+function requestNotif() {
+  if (typeof Notification !== "undefined" && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
+
+function renderTabs() {
+  var el = document.getElementById("tabs"); el.innerHTML = "";
+  DAYS.forEach(function(d, i) {
+    var dc = state.checked[d.id] || {};
+    var done = d.exercises.filter(function(e){ return dc[e.id]; }).length;
+    var ia = aDay === i;
+    var btn = document.createElement("div");
+    btn.className = "tab";
+    btn.style.background = ia ? d.color+"22" : "#111";
+    btn.style.borderColor = ia ? d.color : "#1E1E1E";
+    btn.innerHTML = "<div class=\"tab-label\" style=\"color:"+(ia?d.color:"#555")+"\">" + d.label + "</div><div class=\"tab-count\" style=\"color:"+(ia?d.color+"AA":"#333")+"\">" + done + "/" + d.exercises.length + "</div>";
+    btn.onclick = (function(idx){ return function(){ aDay=idx; expandedEx=null; renderAll(); }; })(i);
+    el.appendChild(btn);
+  });
+}
+
+function renderDayCard() {
+  var day = DAYS[aDay];
+  var dc = state.checked[day.id] || {};
+  var done = day.exercises.filter(function(e){ return dc[e.id]; }).length;
+  var total = day.exercises.length;
+  var pct = Math.round(done/total*100);
+  var allDone = done === total;
+  document.getElementById("glow").style.background = day.color + "44";
+  var card = document.getElementById("day-card");
+  card.style.borderTopColor = day.color;
+  card.style.borderColor = day.color + "33";
+  document.getElementById("day-label").textContent = day.label;
+  document.getElementById("day-label").style.color = day.color;
+  document.getElementById("day-focus").textContent = day.sub;
+  document.getElementById("progress-count").textContent = done+"/"+total+(allDone?" - Concluido!":"");
+  document.getElementById("progress-count").style.color = allDone ? day.color : "#888";
+  document.getElementById("progress-bar").style.width = pct + "%";
+  document.getElementById("progress-bar").style.background = day.color;
+  document.getElementById("progress-bar").style.boxShadow = "0 0 8px " + day.color + "88";
+  document.getElementById("btn-reset").style.display = done > 0 ? "block" : "none";
+  var banner = document.getElementById("done-banner");
+  if (allDone) {
+    banner.style.display = "block";
+    banner.style.background = day.color + "15";
+    banner.style.border = "1px solid " + day.color + "44";
+    document.getElementById("done-title").textContent = "Treino " + day.label + " concluido!";
+    document.getElementById("done-title").style.color = day.color;
+  } else {
+    banner.style.display = "none";
+  }
+  var rem = total - done;
+  var bt = document.getElementById("bottom-text");
+  if (allDone) { bt.innerHTML = "<span style=\"color:"+day.color+"\">Treino "+day.label+" completo!</span>"; }
+  else { bt.textContent = rem + " exercicio"+(rem!==1?"s":"")+" restante"+(rem!==1?"s":""); }
+  var bp = document.getElementById("bottom-pct");
+  bp.textContent = pct + "%";
+  bp.style.background = day.color + "22";
+  bp.style.border = "1px solid " + day.color + "44";
+  bp.style.color = day.color;
+}
+
+function renderExercises() {
+  var day = DAYS[aDay];
+  var dc = state.checked[day.id] || {};
+  var list = document.getElementById("ex-list"); list.innerHTML = "";
+  day.exercises.forEach(function(ex) {
+    var done = !!dc[ex.id];
+    var tc = TC[ex.tag] || "#888";
+    var isOpen = expandedEx === ex.id;
+    var weight = (state.weights[ex.id] || "");
+
+    var card = document.createElement("div");
+    card.className = "ex-card" + (done?" done":"");
+    card.id = "card-" + ex.id;
+    if (done) card.style.borderColor = day.color + "55";
+
+    var cbStyle = done ? "style=\"background:"+day.color+";border-color:"+day.color+";box-shadow:0 0 10px "+day.color+"66\"" : "";
+
+    card.innerHTML =
+      "<div class=\"ex-card-header\" onclick=\"toggleEx(\'"+ex.id+"\',event)\">" +
+        "<div class=\"ex-checkbox\" "+cbStyle+">" + (done?"&#10003;":"") + "</div>" +
+        "<div class=\"ex-info\">" +
+          "<span class=\"ex-tag\" style=\"color:"+tc+";background:"+tc+"18;border:1px solid "+tc+"30\">"+ex.tag+"</span>" +
+          "<div class=\"ex-name\">" + ex.name + "</div>" +
+        "</div>" +
+        "<img class=\"ex-thumb\" src=\""+ex.img+"\" alt=\"\" onerror=\"this.style.display=\'none'\" loading=\"lazy\">" +
+        "<div class=\"ex-expand-btn\" onclick=\"toggleDetails(\'"+ex.id+"\',event)\">" + (isOpen?"&#9650;":"&#9660;") + "</div>" +
+      "</div>" +
+      "<div class=\"ex-details " + (isOpen?"open":"") + "\" id=\"det-"+ex.id+"\">" +
+        "<img class=\"ex-big-img\" src=\""+ex.img+"\" alt=\"\" onerror=\"this.style.display=\'none'\" loading=\"lazy\">" +
+        "<div class=\"ex-stats\">" +
+          "<div class=\"ex-stat\"><div class=\"ex-stat-lbl\">Series</div><div class=\"ex-stat-val\">"+ex.sets+"</div></div>" +
+          "<div class=\"ex-stat\"><div class=\"ex-stat-lbl\">Reps</div><div class=\"ex-stat-val\">"+ex.reps+"</div></div>" +
+          "<div class=\"ex-stat\"><div class=\"ex-stat-lbl\">Pausa</div><div class=\"ex-stat-val\">"+ex.rest+"</div></div>" +
+        "</div>" +
+        "<div class=\"weight-row\">" +
+          "<span class=\"weight-lbl\">Peso</span>" +
+          "<input class=\"weight-input\" type=\"number\" inputmode=\"decimal\" placeholder=\"0\" value=\""+weight+"\" onchange=\"saveWeight(\'"+ex.id+"\',this.value)\" onclick=\"event.stopPropagation()\">" +
+          "<span class=\"weight-unit\">kg</span>" +
+        "</div>" +
+      "</div>";
+
+    list.appendChild(card);
+  });
+}
+
+function toggleEx(exId, event) {
+  var day = DAYS[aDay];
+  if (!state.checked[day.id]) state.checked[day.id] = {};
+  var was = !!state.checked[day.id][exId];
+  state.checked[day.id][exId] = !was;
+  var card = document.getElementById("card-" + exId);
+  if (card) { card.classList.add("pop"); setTimeout(function(){ card.classList.remove("pop"); }, 300); }
+  var dc = state.checked[day.id];
+  var allDone = day.exercises.every(function(e){ return dc[e.id]; });
+  if (allDone && !was) {
+    var t = today();
+    if (!state.history[t]) state.history[t] = [];
+    if (state.history[t].indexOf(day.id) === -1) state.history[t].push(day.id);
+    checkMilestone();
+  }
+  save();
+  updateMilestoneBar();
+  renderAll();
+}
+
+function toggleDetails(exId, event) {
+  event.stopPropagation();
+  expandedEx = (expandedEx === exId) ? null : exId;
+  renderExercises();
+}
+
+function saveWeight(exId, val) {
+  state.weights[exId] = val;
+  save();
+}
+
+function resetDay() {
+  var day = DAYS[aDay];
+  state.checked[day.id] = {};
+  save();
+  renderAll();
+}
+
+function renderHistory() {
+  var sessions = totalSessions();
+  document.getElementById("h-sessions").textContent = sessions;
+  document.getElementById("h-days").textContent = Object.keys(state.history).length;
+  var list = document.getElementById("hist-list"); list.innerHTML = "";
+  var entries = Object.entries(state.history).sort(function(a,b){ return b[0].localeCompare(a[0]); });
+  if (!entries.length) { list.innerHTML = "<div class=\"hist-empty\">Nenhuma sessao concluida ainda.<br>Complete um treino para ver aqui!</div>"; return; }
+  entries.forEach(function(entry) {
+    var d = new Date(entry[0] + "T12:00:00");
+    var label = d.toLocaleDateString("pt-BR", {weekday:"long",day:"numeric",month:"long"});
+    var item = document.createElement("div"); item.className = "hist-item";
+    var tags = entry[1].map(function(did) {
+      var dd = DAYS.find(function(x){ return x.id === did; });
+      return dd ? "<span class=\"hist-tag\" style=\"background:"+dd.color+"22;border:1px solid "+dd.color+"44;color:"+dd.color+"\">"+dd.label+"</span>" : "";
+    }).join("");
+    item.innerHTML = "<div class=\"hist-date\">"+label+"</div><div class=\"hist-tags\">"+tags+"</div>";
+    list.appendChild(item);
+  });
+}
+
+function toggleView() {
+  cView = cView === "workout" ? "history" : "workout";
+  var btn = document.getElementById("btn-hist");
+  var content = document.getElementById("content");
+  var hv = document.getElementById("history-view");
+  var tabs = document.getElementById("tabs");
+  if (cView === "history") {
+    btn.textContent = "Voltar"; btn.classList.add("active");
+    content.style.display = "none"; hv.style.display = "block"; tabs.style.display = "none";
+    renderHistory();
+  } else {
+    btn.textContent = "Historico"; btn.classList.remove("active");
+    content.style.display = "block"; hv.style.display = "none"; tabs.style.display = "flex";
+  }
+}
+
+function renderAll() { renderTabs(); renderDayCard(); renderExercises(); updateMilestoneBar(); }
+load();
+requestNotif();
+renderAll();
+</script>
+</body>
+</html>
